@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>asa-slides</title>
+<meta name="description" content="Agent skill that turns PDF or Markdown material into interactive, animated HTML slide decks with motion-graphic explainers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F6F8;--surface:#fff;--ink:#13202A;--muted:#4D5B67;--line:#D0D9E0;--accent:#0B6E8A;--accent-ink:#fff;
+  --f-head:'Bricolage Grotesque',system-ui,sans-serif;--f-body:'Plus Jakarta Sans',system-ui,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0F161C;--surface:#162028;--ink:#E6ECF1;--muted:#A2B0BB;--line:#2A3843;--accent:#5BBBD3;--accent-ink:#0A1A20;color-scheme:dark}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+main{max-width:980px;margin:0 auto;padding:clamp(28px,6vw,64px) 16px 56px;display:grid;gap:28px}
+h1{font:700 clamp(2rem,5vw,3.2rem)/1.08 var(--f-head);margin:0}
+.lede{margin:14px 0 0;max-width:60ch;color:var(--muted);font-size:1.075rem}
+.go{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-block;padding:11px 20px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;text-decoration:none}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.shot{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.shot img{display:block;width:100%;height:auto}
+.note{margin:0;color:var(--muted);font-size:.9rem;max-width:68ch}
+.note a{color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>asa-slides</h1>
+    <p class="lede">An agent skill that turns lecture, training, project or thesis material into an interactive slide deck, where each key concept is explained by a short step-by-step animation instead of bullet points.</p>
+  </div>
+  <div class="go">
+    <a class="btn primary" href="galeri-explainer.html">Explainer gallery</a>
+    <a class="btn" href="contoh-deck.html">Example deck</a>
+    <a class="btn" href="https://github.com/asashades/asa-slides">Source on GitHub</a>
+  </div>
+  <figure class="shot"><img src="media/hero.gif" alt="A deck built with the skill: a bag taken apart, a cost tower, overlapping sets and a balance scale, stepped with the arrow keys" width="800" height="450"></figure>
+  <p class="note">In the example deck, press the right arrow to advance each animation step and the left arrow to go back. Press G for the slide grid. The demos use an Indonesian bag-making business as the running case, so the on-screen text is Indonesian.</p>
+</main>
+</body>
+</html>

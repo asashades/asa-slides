@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Judul Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<!--
+  ENGINE TEMPLATE · slide-interaktif-animatif
+  Bagian yang diubah per deck:
+    [A] TOKEN TEMA   (CSS :root, lihat references/tema.md)
+    [B] CSS ADEGAN   (gaya khusus adegan explainer deck ini)
+    [C] KONFIGURASI  (DECK: judul, dosen, bagian & menit)
+    [D] SLIDE        (add(...) satu per slide)
+  Bagian MESIN tidak perlu diubah. Dokumentasi API: references/mesin-slide.md
+-->
+<style>
+/* ===================== [A] TOKEN TEMA ===================== */
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --surface-2:#E7EDF1; --ink:#13202A; --muted:#4D5B67; --line:#D0D9E0;
+  --accent:#0B6E8A; --accent-ink:#FFFFFF; --accent-soft:#DCEEF3;
+  --bad:#B4382C; --bad-soft:#F8E2DE; --warn:#8F5B05; --warn-soft:#FAEDD3; --good:#1B7548; --good-soft:#DCF0E4;
+  --f-head:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-body:'Plus Jakarta Sans',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --radius:12px; --gap:20px;
+  --ease:cubic-bezier(.22,.7,.2,1); --dur:.5s;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F161C; --surface:#162028; --surface-2:#1E2A33; --ink:#E6ECF1; --muted:#A2B0BB; --line:#2A3843;
+  --accent:#5BBBD3; --accent-ink:#0A1A20; --accent-soft:#143440;
+  --bad:#EE8B7F; --bad-soft:#3A201E; --warn:#E2B158; --warn-soft:#382C14; --good:#6CCB9B; --good-soft:#163226;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F161C; --surface:#162028; --surface-2:#1E2A33; --ink:#E6ECF1; --muted:#A2B0BB; --line:#2A3843;
+  --accent:#5BBBD3; --accent-ink:#0A1A20; --accent-soft:#143440;
+  --bad:#EE8B7F; --bad-soft:#3A201E; --warn:#E2B158; --warn-soft:#382C14; --good:#6CCB9B; --good-soft:#163226;
+  color-scheme:dark}
+
+/* ===================== MESIN: dasar & tata letak ===================== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 clamp(16px,.55vw + 12px,20px)/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.fa{width:1em;height:1em;fill:currentColor;flex:none;vertical-align:-.125em}
+#app{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;max-width:1360px;margin:0 auto;
+  padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 0 8px;flex-wrap:wrap}
+.brand{margin-right:auto;min-width:0;font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(52ch,60vw)}
+.brand small{color:var(--muted);font-weight:500}
+.ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.ib:hover{border-color:var(--accent)}
+.ib:focus-visible,.btn:focus-visible,.opt:focus-visible,.gc:focus-visible,.prog button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.timer{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px 10px 3px 3px}
+.timer .ib{width:32px;height:32px;border:0;background:var(--accent);color:var(--accent-ink)}
+.timer .ib.ghost{background:transparent;color:var(--ink)}
+.td{display:grid;line-height:1.1}.td b{font:600 .98rem var(--f-mono)}.td small{font-size:.7rem;color:var(--muted)}
+.td.over b{color:var(--bad)}
+.prog{display:flex;gap:6px;padding-bottom:6px}
+.prog button{flex:var(--w) 1 0;min-width:0;border:0;background:none;padding:0;cursor:pointer;text-align:left}
+.prog span{display:block;font:500 .7rem var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.prog .now span{color:var(--ink);font-weight:600}
+.prog .tr{height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.prog .tr i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s var(--ease)}
+#stage{overflow-y:auto;overflow-x:hidden;min-height:0;padding:10px 0 14px}
+.sl{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--gap)}
+.sl.enter{animation:slin .45s var(--ease)}
+@keyframes slin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 max(14px,env(safe-area-inset-bottom))}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{padding:5px 10px;font-size:.82rem;font-weight:500}
+.pg{font:500 .9rem var(--f-mono);color:var(--muted)}.pg b{color:var(--ink)}
+@media (max-width:640px){.btn .w{display:none}.timer .td:nth-child(3){display:none}}
+
+/* ===================== MESIN: tipografi & blok isi ===================== */
+.eyebrow{font:600 .875rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero{font:700 clamp(2.3rem,4.6vw,4rem)/1.06 var(--f-head);letter-spacing:-.01em;margin:.25em 0 .2em;max-width:18ch;text-wrap:balance}
+.st{font:700 clamp(1.55rem,2.8vw,2.5rem)/1.14 var(--f-head);margin:.2em 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:.45em 0 0;max-width:64ch;text-wrap:pretty}
+p,li{text-wrap:pretty}
+.sl p{max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;min-width:0}
+.card h3{font:650 1.08rem/1.3 var(--f-body);margin:0 0 .35em}
+.card p{margin:0;color:var(--muted)}
+.tag{font:600 .74rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap);align-items:start}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);align-items:start}
+@media (max-width:900px){.g2,.g3{grid-template-columns:minmax(0,1fr)}}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.list li{display:grid;grid-template-columns:1.6em minmax(0,1fr);gap:10px;align-items:start}
+.list .fa{color:var(--accent);margin-top:.25em;width:1.15em;height:1.15em}
+.formula{font:600 clamp(1rem,1.6vw,1.3rem) var(--f-mono);background:var(--accent-soft);border-radius:10px;padding:12px 16px;max-width:max-content}
+.scene{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(8px,1.4vw,16px);min-width:0}
+.scene svg{display:block;width:100%;height:auto;max-height:54vh}
+.scroll-x{overflow-x:auto}
+.cover{display:grid;gap:4px;max-width:900px}
+.meta{display:flex;flex-wrap:wrap;gap:28px;margin:22px 0 0}
+.meta div{display:grid}.meta dt{font:600 .74rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.meta dd{margin:0;font-weight:600}
+
+/* ===================== MESIN: sistem tahap ===================== */
+/* Elemen dengan data-from="n" tampil mulai tahap n (data-to="m" sampai tahap m). */
+[data-from]{opacity:0;transform:translateY(8px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+[data-from].on{opacity:1;transform:none}
+svg [data-from]{transform:none}
+/* Gerak explainer siap pakai (tambahkan kelas + data-from) */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1s var(--ease),opacity .3s}
+.draw.on{stroke-dashoffset:0}
+.grow-y,.grow-x{transform-box:fill-box;transition:transform .8s var(--ease),opacity .3s}
+.grow-y{transform-origin:50% 100%;transform:scaleY(0)}.grow-x{transform-origin:0 50%;transform:scaleX(0)}
+.grow-y.on,.grow-x.on{transform:none}
+[data-move]{transition:transform .8s var(--ease),fill .4s,opacity .4s}
+[data-now]{transition:opacity .35s,filter .35s}
+.dimmed [data-now]:not(.now):not(.only){opacity:.3}
+.sl [data-now].only:not(.now){opacity:0}
+.noanim,.noanim *{transition:none!important;animation:none!important}
+html.rm *,html.rm *::before,html.rm *::after{transition:none!important;animation:none!important}
+html:not(.js) [data-from]{opacity:1;transform:none}
+.stepui{display:grid;gap:8px}
+.cap{margin:0;min-height:2.7em;font-size:1.04em;max-width:72ch}
+.mctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.86rem}
+.dots{display:flex;gap:5px}.dots i{width:20px;height:6px;border-radius:3px;background:var(--surface-2)}
+.dots i.done{background:color-mix(in srgb,var(--accent) 45%,var(--surface-2))}.dots i.now{background:var(--accent)}
+
+/* ===================== MESIN: kuis ===================== */
+.qq{font:700 clamp(1.45rem,2.6vw,2.2rem)/1.2 var(--f-head);margin:.2em 0 0;max-width:30ch;text-wrap:balance}
+.opts{display:grid;gap:10px;max-width:760px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer;font-size:1.02em}
+.opt i{font:600 .85rem var(--f-mono);font-style:normal;width:1.8em;height:1.8em;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);flex:none}
+.opt.sel{border-color:var(--accent)}.opt.sel i{background:var(--accent);color:var(--accent-ink)}
+.opt.ok{border-color:var(--good);background:var(--good-soft)}.opt.ok i{background:var(--good);color:var(--surface)}
+.opt.no{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.exp{display:flex;gap:10px;align-items:flex-start;max-width:760px;background:var(--good-soft);border-radius:10px;padding:12px 16px}
+.exp .fa{color:var(--good);width:1.2em;height:1.2em;margin-top:.15em}
+.exp[hidden]{display:none}
+.khint{font:500 .875rem var(--f-mono);color:var(--muted)}
+kbd{font:600 .78rem var(--f-mono);border:1px solid var(--line);border-radius:5px;padding:1px 6px;background:var(--surface)}
+
+/* ===================== MESIN: menu grid & lompat ===================== */
+.gridv{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 32px max(16px,env(safe-area-inset-left))}
+.gridv[hidden]{display:none}
+.gv-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;max-width:1360px;margin:0 auto 16px}
+.gv-h h2{font:700 1.4rem var(--f-head);margin:0;flex:1 1 auto}
+.gv-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:12px;max-width:1360px;margin:0 auto}
+.gc{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-height:96px;cursor:pointer;display:grid;gap:4px;align-content:start;min-width:0}
+.gc .n{font:600 1.1rem var(--f-mono)}
+.gc small{font:500 .7rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.gc b{font-weight:600;font-size:.92rem;line-height:1.3;overflow-wrap:anywhere}
+.gc.now{background:var(--accent-soft);border-color:var(--accent)}
+.gc.sel{outline:3px solid var(--accent);outline-offset:2px}
+.jump{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--bg);font:600 1.1rem var(--f-mono);padding:8px 16px;border-radius:10px}
+.jump[hidden]{display:none}
+
+/* ===================== MESIN: mode cetak (PDF) ===================== */
+html.print .bar,html.print .prog,html.print .fnav,html.print .mctl,html.print .khint{display:none!important}
+html.print #app{grid-template-rows:minmax(0,1fr)}
+html.print #stage{overflow:hidden;padding:24px 8px}
+
+/* ===================== MESIN: layar pendek (proyektor 720p/768p) ===================== */
+@media (max-height:820px){.sl{gap:14px}.scene svg{max-height:40vh}.hero{font-size:clamp(2.1rem,4.2vw,3.4rem)}.cap{min-height:2.5em}#stage{padding:6px 0 8px}}
+
+/* ===================== [B] CSS ADEGAN (khusus deck ini) ===================== */
+/* Contoh: adegan komposisi biaya (slide contoh 3). Hapus bila adegan contoh dihapus. */
+#cx .ax{stroke:var(--line);stroke-width:2}
+#cx .lbl{font:600 15px var(--f-body);fill:var(--ink)}
+#cx .val{font:600 14px var(--f-mono);fill:var(--muted)}
+#cx .b-a{fill:var(--accent)}#cx .b-b{fill:var(--warn)}#cx .b-c{fill:var(--good)}
+#cx .brk{fill:none;stroke:var(--ink);stroke-width:2.5}
+#cx .tot{font:700 22px var(--f-mono);fill:var(--ink)}
+#cx .prod{fill:var(--surface-2);stroke:var(--ink);stroke-width:2.5}
+#cx .prod-h{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linecap:round}
+</style>
+</head>
+<body>
+<!--FA-SPRITE--><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="fa-rotate-left" viewBox="0 0 512 512"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></symbol><symbol id="fa-border-all" viewBox="0 0 448 512"><path d="M384 96V224H256V96H384zm0 192V416H256V288H384zM192 224H64V96H192V224zM64 288H192V416H64V288zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z"/></symbol><symbol id="fa-circle-half-stroke" viewBox="0 0 512 512"><path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></symbol><symbol id="fa-expand" viewBox="0 0 448 512"><path d="M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z"/></symbol><symbol id="fa-chevron-left" viewBox="0 0 320 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/></symbol><symbol id="fa-chevron-right" viewBox="0 0 320 512"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></symbol><symbol id="fa-play" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></symbol><symbol id="fa-pause" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></symbol><symbol id="fa-xmark" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></symbol><symbol id="fa-circle-check" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></symbol><symbol id="fa-lightbulb" viewBox="0 0 384 512"><path d="M272 384c9.6-31.9 29.5-59.1 49.2-86.2l0 0c5.2-7.1 10.4-14.2 15.4-21.4c19.8-28.5 31.4-63 31.4-100.3C368 78.8 289.2 0 192 0S16 78.8 16 176c0 37.3 11.6 71.9 31.4 100.3c5 7.2 10.2 14.3 15.4 21.4l0 0c19.8 27.1 39.7 54.4 49.2 86.2H272zM192 512c44.2 0 80-35.8 80-80V416H112v16c0 44.2 35.8 80 80 80zM112 176c0 8.8-7.2 16-16 16s-16-7.2-16-16c0-61.9 50.1-112 112-112c8.8 0 16 7.2 16 16s-7.2 16-16 16c-44.2 0-80 35.8-80 80z"/></symbol><symbol id="fa-bullseye" viewBox="0 0 512 512"><path d="M448 256A192 192 0 1 0 64 256a192 192 0 1 0 384 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 80a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm0-224a144 144 0 1 1 0 288 144 144 0 1 1 0-288zM224 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></symbol><symbol id="fa-calculator" viewBox="0 0 384 512"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM96 64H288c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V96c0-17.7 14.3-32 32-32zm32 160a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zM96 352a32 32 0 1 1 0-64 32 32 0 1 1 0 64zM64 416c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H96c-17.7 0-32-14.3-32-32zM192 256a32 32 0 1 1 0-64 32 32 0 1 1 0 64zm32 64a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zm64-64a32 32 0 1 1 0-64 32 32 0 1 1 0 64zm32 64a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zM288 448a32 32 0 1 1 0-64 32 32 0 1 1 0 64z"/></symbol><symbol id="fa-comments" viewBox="0 0 640 512"><path d="M208 352c114.9 0 208-78.8 208-176S322.9 0 208 0S0 78.8 0 176c0 38.6 14.7 74.3 39.6 103.4c-3.5 9.4-8.7 17.7-14.2 24.7c-4.8 6.2-9.7 11-13.3 14.3c-1.8 1.6-3.3 2.9-4.3 3.7c-.5 .4-.9 .7-1.1 .8l-.2 .2 0 0 0 0C1 327.2-1.4 334.4 .8 340.9S9.1 352 16 352c21.8 0 43.8-5.6 62.1-12.5c9.2-3.5 17.8-7.4 25.3-11.4C134.1 343.3 169.8 352 208 352zM448 176c0 112.3-99.1 196.9-216.5 207C255.8 457.4 336.4 512 432 512c38.2 0 73.9-8.7 104.7-23.9c7.5 4 16 7.9 25.2 11.4c18.3 6.9 40.3 12.5 62.1 12.5c6.9 0 13.1-4.5 15.2-11.1c2.1-6.6-.2-13.8-5.8-17.9l0 0 0 0-.2-.2c-.2-.2-.6-.4-1.1-.8c-1-.8-2.5-2-4.3-3.7c-3.6-3.3-8.5-8.1-13.3-14.3c-5.5-7-10.7-15.4-14.2-24.7c24.9-29 39.6-64.7 39.6-103.4c0-92.8-84.9-168.9-192.6-175.5c.4 5.1 .6 10.3 .6 15.5z"/></symbol></defs></svg><!--/FA-SPRITE-->
+<div id="app">
+  <header class="bar">
+    <div class="brand" id="brand"></div>
+    <div class="timer" role="group" aria-label="Timer sesi">
+      <button class="ib" id="tPlay" type="button" aria-label="Mulai atau jeda timer (T)"></button>
+      <div class="td" id="tdSec"><b id="tSec">0:00</b><small id="tLbl">sisa bagian</small></div>
+      <div class="td"><b id="tTot">0:00</b><small>sisa sesi</small></div>
+      <button class="ib ghost" id="tReset" type="button" aria-label="Setel ulang timer"><svg class="fa"><use href="#fa-rotate-left"/></svg></button>
+    </div>
+    <button class="ib" id="gridBtn" type="button" aria-label="Semua slide (G)" title="Semua slide (G)"><svg class="fa"><use href="#fa-border-all"/></svg></button>
+    <button class="ib" id="themeBtn" type="button" aria-label="Ganti tema terang atau gelap"><svg class="fa"><use href="#fa-circle-half-stroke"/></svg></button>
+    <button class="ib" id="fsBtn" type="button" aria-label="Layar penuh (F)"><svg class="fa"><use href="#fa-expand"/></svg></button>
+  </header>
+  <nav class="prog" id="prog" aria-label="Bagian sesi"></nav>
+  <main id="stage" aria-live="polite"></main>
+  <footer class="fnav">
+    <button class="btn" id="prev" type="button" aria-label="Sebelumnya"><svg class="fa"><use href="#fa-chevron-left"/></svg><span class="w">Sebelumnya</span></button>
+    <div class="pg" id="pg"></div>
+    <button class="btn primary" id="next" type="button" aria-label="Berikutnya"><span class="w" id="nextLbl">Berikutnya</span><svg class="fa"><use href="#fa-chevron-right"/></svg></button>
+  </footer>
+</div>
+<div class="gridv" id="gridv" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Semua slide"></div>
+<div class="jump" id="jump" hidden aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.classList.add('js');
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const slides=[];
+function add(sec,o){o.sec=sec;slides.push(o);return o}
+
+/* ===================== [C] KONFIGURASI ===================== */
+const DECK={
+  course:'Nama Mata Kuliah',            // atau nama pelatihan
+  meeting:'Pertemuan 1',
+  presenter:'Nama Dosen',
+  timer:true,                            // false = sembunyikan timer (T nonaktif)
+  sections:[                             // menit tiap bagian; totalnya = durasi sesi
+    {name:'Pembuka',min:10},
+    {name:'Inti',min:30},
+    {name:'Penutup',min:10}
+  ]
+};
+
+/* ===================== HELPER untuk penulis slide ===================== */
+function ico(n,c){return '<svg class="fa'+(c?' '+c:'')+'" aria-hidden="true"><use href="#fa-'+n+'"/></svg>'}
+function head(t,l){const s=DECK.sections[cur.sec];t=t||cur.title;
+  return '<header><div class="eyebrow">Bagian '+(cur.sec+1)+' · '+s.name+'</div><h2 class="st">'+t+'</h2>'+(l?'<p class="lede">'+l+'</p>':'')+'</header>'}
+const rp=v=>'Rp'+Math.round(v).toLocaleString('id-ID');
+const pct=(v,d)=>v.toLocaleString('id-ID',{maximumFractionDigits:d==null?1:d})+'%';
+/* Angka bergerak: count(el, tujuan, format, anim) */
+function count(el,to,fmt,anim){if(!el)return;fmt=fmt||(v=>Math.round(v).toLocaleString('id-ID'));const from=el._v==null?0:el._v;el._v=to;
+  if(!anim||document.documentElement.classList.contains('rm')){el.textContent=fmt(to);return}
+  const t0=performance.now(),d=800;(function f(t){const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.textContent=fmt(from+(to-from)*e);if(k<1)requestAnimationFrame(f)})(t0)}
+
+/* ===================== [D] SLIDE =====================
+   add(bagian, {title, html(), steps, caps:[...], step(s,ctx), bind(root), leave(), vert(d,shift)})
+   add(bagian, {title, quiz:{q, o:[...], a, e}})
+   Slide di bawah ini CONTOH. Ganti seluruhnya dengan slide deck Anda. Slide kuis bersifat opsional: hapus bila tanpa kuis. */
+
+add(0,{title:'Judul pertemuan',
+  html:()=>'<div class="cover"><div class="eyebrow">'+DECK.course+' · '+DECK.meeting+'</div>'+
+    '<h1 class="hero">Judul pertemuan yang singkat dan jelas</h1>'+
+    '<p class="lede">Satu kalimat pertanyaan inti yang akan dijawab sesi ini.</p>'+
+    '<dl class="meta"><div><dt>Dosen</dt><dd>'+DECK.presenter+'</dd></div><div><dt>Durasi</dt><dd>'+TOTAL_MIN+' menit</dd></div></dl></div>'});
+
+add(0,{title:'Tujuan pertemuan',
+  html:()=>head()+'<ul class="list">'+
+    [['bullseye','Menjelaskan konsep inti dengan bahasa sendiri.'],['calculator','Menghitung komponen utama dari satu kasus.'],['comments','Menafsirkan hasil hitungan untuk keputusan.']]
+    .map(x=>'<li>'+ico(x[0])+'<span>'+x[1]+'</span></li>').join('')+'</ul>'});
+
+/* Contoh adegan explainer 2D: tiga komponen tumbuh, lalu kurung total tergambar dan angka total berjalan. */
+add(1,{title:'Contoh adegan: komposisi biaya satu produk',steps:5,
+  caps:['Satu produk jadi. Biayanya belum terlihat.',
+        'Komponen pertama: bahan yang membentuk produk.',
+        'Komponen kedua: upah orang yang mengerjakannya.',
+        'Komponen ketiga: biaya pabrik yang tidak menempel di produk.',
+        'Ketiganya dijumlahkan menjadi biaya produksi per unit.'],
+  html:()=>head()+'<div class="scene"><svg id="cx" viewBox="0 0 760 330" role="img" aria-label="Tiga batang biaya bertumpuk membentuk total biaya per unit">'+
+    '<path class="prod" d="M58 120 H172 A12 12 0 0 1 184 132 V258 A12 12 0 0 1 172 270 H58 A12 12 0 0 1 46 258 V132 A12 12 0 0 1 58 120 Z"/><path class="prod-h" d="M88 120 V100 A27 27 0 0 1 142 100 V120"/><path class="prod-h" d="M70 168 H160"/><text class="lbl" x="115" y="300" text-anchor="middle">1 tas</text>'+
+    '<line class="ax" x1="260" y1="290" x2="720" y2="290"/>'+
+    '<rect class="b-a grow-y" data-from="1" x="300" y="110" width="110" height="180"/><text class="lbl" data-from="1" x="355" y="312" text-anchor="middle">Bahan</text><text class="val" data-from="1" x="355" y="100" text-anchor="middle">Rp85.000</text>'+
+    '<rect class="b-b grow-y" data-from="2" x="440" y="195" width="110" height="95"/><text class="lbl" data-from="2" x="495" y="312" text-anchor="middle">Upah</text><text class="val" data-from="2" x="495" y="185" text-anchor="middle">Rp45.000</text>'+
+    '<rect class="b-c grow-y" data-from="3" x="580" y="248" width="110" height="42"/><text class="lbl" data-from="3" x="635" y="312" text-anchor="middle">Pabrik</text><text class="val" data-from="3" x="635" y="238" text-anchor="middle">Rp20.000</text>'+
+    '<path class="brk draw" data-from="4" pathLength="1" d="M300 60 V44 H690 V60"/><text class="tot" data-from="4" id="cxTot" x="495" y="34" text-anchor="middle">Rp0</text></svg></div>',
+  step:(s,c)=>{count(c.q('#cxTot'),s>=4?150000:0,rp,c.anim)}});
+
+add(1,{title:'Kuis',quiz:{q:'Upah kepala bengkel yang mengawasi semua pekerja termasuk komponen apa?',
+  o:['Bahan','Upah langsung','Biaya pabrik (overhead)'],a:2,e:'Ia tidak mengerjakan produk secara langsung, jadi upahnya masuk biaya pabrik.'}});
+
+add(2,{title:'Ringkasan dan tugas',
+  html:()=>head()+'<div class="g2"><div class="card"><div class="tag">Hari ini</div><h3>Tiga komponen membentuk biaya satu produk</h3><p>Bahan, upah langsung, dan biaya pabrik.</p></div>'+
+    '<div class="card"><div class="tag">Tugas</div><h3>Hitung satu produk dari usaha nyata</h3><p>Kumpulkan sebelum pertemuan berikutnya.</p></div></div>'});
+
+/* ===================== MESIN (tidak perlu diubah) ===================== */
+const TOTAL_MIN=DECK.sections.reduce((a,s)=>a+s.min,0);
+const stage=$('#stage');let idx=-1,cur=null,step=0;
+const nsteps=s=>s.quiz?1:(s.steps||1);
+const kindOf=s=>s.quiz?'Kuis':(nsteps(s)>1?nsteps(s)+' tahap':'Slide');
+const titleOf=(s,i)=>s.title?(s.quiz?'Kuis: '+s.quiz.q:s.title):'Slide '+(i+1);
+const rm=matchMedia('(prefers-reduced-motion: reduce)');
+const setRM=()=>document.documentElement.classList.toggle('rm',rm.matches);setRM();rm.addEventListener&&rm.addEventListener('change',setRM);
+
+$('#brand').innerHTML=DECK.course+' <small>· '+DECK.meeting+'</small>';
+document.title=DECK.course+' · '+DECK.meeting;
+if(DECK.timer===false){const tm=$('.timer');if(tm)tm.style.display='none'}
+
+function quizHTML(s){const z=s.quiz,st=s.qs||(s.qs={sel:null,rev:false});
+  return '<div><div class="eyebrow">Kuis · Bagian '+(s.sec+1)+'</div><h2 class="qq">'+z.q+'</h2></div><div class="opts">'+
+    z.o.map((t,i)=>{const c=st.rev?(i===z.a?'ok':(i===st.sel?'no':'')):(i===st.sel?'sel':'');
+      return '<button class="opt '+c+'" type="button" data-o="'+i+'"'+(st.rev?' disabled':'')+'><i>'+'ABCDE'[i]+'</i><span>'+t+'</span></button>'}).join('')+'</div>'+
+    '<div class="exp"'+(st.rev?'':' hidden')+'>'+ico(st.sel===z.a?'circle-check':'lightbulb')+'<span>'+(st.sel===z.a?'Tepat. ':'Jawaban: '+'ABCDE'[z.a]+'. ')+z.e+'</span></div>'+
+    (st.rev?'':'<p class="khint"><kbd>↑</kbd> <kbd>↓</kbd> pilih jawaban kelas · <kbd>→</kbd> buka jawaban</p>')}
+function stepUI(n){let d='';for(let i=0;i<n;i++)d+='<i></i>';
+  return '<div class="stepui"><p class="cap"></p><div class="mctl"><div class="dots" aria-hidden="true">'+d+'</div><span class="cnt"></span>'+
+    '<button class="btn sm" type="button" data-act="replay">'+ico('rotate-left')+' Ulang animasi</button></div></div>'}
+function render(entering){const n=nsteps(cur);
+  stage.innerHTML='<div class="sl'+(entering?' enter':'')+'">'+(cur.quiz?quizHTML(cur):cur.html())+(n>1?stepUI(n):'')+'</div>';
+  stage.scrollTop=0;if(cur.bind)cur.bind(stage.firstElementChild)}
+function applyStep(anim){const root=stage.firstElementChild;if(!root)return;
+  if(!anim)root.classList.add('noanim');
+  $$('[data-from]',root).forEach(e=>{const f=+e.dataset.from,t=e.dataset.to==null?1e9:+e.dataset.to;e.classList.toggle('on',step>=f&&step<=t)});
+  $$('[data-move]',root).forEach(e=>e.classList.toggle('mv',step>=+e.dataset.move));
+  let anyNow=false;$$('[data-now]',root).forEach(e=>{const on=e.dataset.now.split(/[\s,]+/).map(Number).includes(step);e.classList.toggle('now',on);if(on&&!e.classList.contains('only'))anyNow=true});
+  root.classList.toggle('dimmed',anyNow);
+  const n=nsteps(cur),cap=$('.cap',root);if(cap)cap.textContent=(cur.caps&&cur.caps[step])||'';
+  $$('.dots i',root).forEach((d,i)=>{d.className=i<step?'done':(i===step?'now':'')});
+  const cnt=$('.cnt',root);if(cnt)cnt.textContent='Tahap '+(step+1)+' dari '+n;
+  if(cur.step)cur.step(step,{root,anim:!!anim&&!document.documentElement.classList.contains('rm'),q:s=>root.querySelector(s),qa:s=>[...root.querySelectorAll(s)]});
+  if(!anim){void root.offsetWidth;requestAnimationFrame(()=>root.classList.remove('noanim'))}
+  chrome()}
+function show(i,opt){opt=opt||{};i=Math.max(0,Math.min(slides.length-1,i));const entering=i!==idx;if(entering&&cur&&cur.leave)cur.leave();idx=i;cur=slides[i];
+  if(entering||opt.last)step=opt.last?nsteps(cur)-1:0;
+  if(opt.last&&cur.quiz){cur.qs=cur.qs||{sel:null,rev:false};cur.qs.rev=true;if(cur.qs.sel==null)cur.qs.sel=-1}
+  render(entering&&!opt.instant);
+  if(entering&&!opt.last&&!opt.instant){void stage.offsetWidth;applyStep(true)}else applyStep(false);
+  try{history.replaceState(null,'','#slide-'+(idx+1))}catch(e){}}
+function fwd(){if(cur.quiz&&!cur.qs.rev){cur.qs.rev=true;if(cur.qs.sel==null)cur.qs.sel=-1;render(false);applyStep(false);return}
+  if(step<nsteps(cur)-1){step++;applyStep(true);return}
+  if(idx<slides.length-1)show(idx+1)}
+function back(){if(cur.quiz&&cur.qs.rev){cur.qs.rev=false;if(cur.qs.sel===-1)cur.qs.sel=null;render(false);applyStep(false);return}
+  if(step>0){step--;applyStep(true);return}
+  if(idx>0)show(idx-1,{last:true})}
+function replay(){const root=stage.firstElementChild;root.classList.add('noanim');$$('[data-from]',root).forEach(e=>e.classList.remove('on'));
+  $$('[data-now]',root).forEach(e=>e.classList.remove('now'));$$('[data-move]',root).forEach(e=>e.classList.remove('mv'));$$('[id]',root).forEach(e=>{e._v=null});
+  void root.offsetWidth;root.classList.remove('noanim');requestAnimationFrame(()=>applyStep(true))}
+
+/* chrome: tombol, nomor, progres */
+$('#prog').innerHTML=DECK.sections.map((s,i)=>'<button type="button" style="--w:'+s.min+'" data-sec="'+i+'" aria-label="Bagian '+(i+1)+': '+s.name+'"><span>'+(i+1)+'. '+s.name+'</span><div class="tr"><i></i></div></button>').join('');
+function chrome(){const n=slides.length,more=step<nsteps(cur)-1;
+  $('#prev').disabled=idx===0&&step===0&&!(cur.quiz&&cur.qs.rev);$('#next').disabled=idx===n-1&&!more&&!(cur.quiz&&!cur.qs.rev);
+  $('#nextLbl').textContent=cur.quiz&&!cur.qs.rev?'Buka jawaban':(more?'Tahap berikutnya':'Berikutnya');
+  $('#pg').innerHTML='<b>'+(idx+1)+'</b> / '+n;
+  const inSec=slides.filter(s=>s.sec===cur.sec),pos=inSec.indexOf(cur)+1;
+  $$('#prog button').forEach((b,i)=>{b.classList.toggle('now',i===cur.sec);b.setAttribute('aria-current',i===cur.sec?'step':'false');
+    $('i',b).style.width=(i<cur.sec?100:i===cur.sec?pos/inSec.length*100:0)+'%'});
+  paintTimer()}
+
+/* timer per bagian */
+const T={run:false,iv:null,sec:[],tot:0};
+function resetTimer(){T.sec=DECK.sections.map(s=>s.min*60);T.tot=TOTAL_MIN*60;paintTimer()}
+const mmss=v=>{const a=Math.abs(v);return (v<0?'-':'')+Math.floor(a/60)+':'+String(a%60).padStart(2,'0')};
+function paintTimer(){if(!cur)return;$('#tSec').textContent=mmss(T.sec[cur.sec]);$('#tLbl').textContent='sisa bagian '+(cur.sec+1);$('#tTot').textContent=mmss(T.tot);
+  $('#tdSec').classList.toggle('over',T.sec[cur.sec]<0);$('#tPlay').innerHTML=ico(T.run?'pause':'play')}
+function toggleTimer(){T.run=!T.run;clearInterval(T.iv);if(T.run)T.iv=setInterval(()=>{T.sec[cur.sec]--;T.tot--;paintTimer()},1000);paintTimer()}
+$('#tPlay').onclick=toggleTimer;$('#tReset').onclick=()=>{if(T.run)toggleTimer();resetTimer()};
+
+/* menu grid + lompat nomor */
+const gv=$('#gridv'),jp=$('#jump');let gsel=0,gbuf='',gt=null;
+function openGrid(){gv.innerHTML='<div class="gv-h"><h2>Semua slide ('+slides.length+')</h2><span class="khint"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> pilih · <kbd>Enter</kbd> buka · ketik nomor · <kbd>Esc</kbd> tutup</span>'+
+  '<button class="btn sm" type="button" data-act="gclose">'+ico('xmark')+' Tutup</button></div><div class="gv-g">'+
+  slides.map((s,i)=>'<button type="button" class="gc'+(i===idx?' now':'')+'" data-gi="'+i+'"><span class="n">'+(i+1)+'</span><small>Bagian '+(s.sec+1)+' · '+kindOf(s)+'</small><b>'+titleOf(s,i)+'</b></button>').join('')+'</div>';
+  gsel=idx;gbuf='';gv.hidden=false;gv.scrollTop=0;gv.focus();gpaint()}
+function closeGrid(){gv.hidden=true;gbuf='';if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}
+function gcols(){const c=$$('.gc',gv);if(!c.length)return 1;const y=c[0].offsetTop;let n=0;while(n<c.length&&c[n].offsetTop===y)n++;return n||1}
+function gpaint(){const c=$$('.gc',gv);c.forEach((e,i)=>e.classList.toggle('sel',i===gsel));if(c[gsel]&&c[gsel].scrollIntoView)c[gsel].scrollIntoView({block:'nearest'})}
+function jumpShow(){jp.hidden=!gbuf;jp.textContent=gbuf?'Ke slide '+gbuf+' (Enter)':'';clearTimeout(gt);gt=setTimeout(()=>{gbuf='';jp.hidden=true},3500)}
+function gridKey(e){const k=e.key;
+  if(gv.hidden){
+    if(k==='g'||k==='G'){e.preventDefault();openGrid();return true}
+    if(/^[0-9]$/.test(k)){gbuf=(gbuf+k).slice(-3);jumpShow();return true}
+    if(gbuf&&k==='Enter'){e.preventDefault();const n=+gbuf;gbuf='';jp.hidden=true;show(n-1);return true}
+    if(gbuf&&k==='Backspace'){gbuf=gbuf.slice(0,-1);jumpShow();return true}
+    if(gbuf&&k==='Escape'){gbuf='';jp.hidden=true;return true}
+    return false}
+  const n=slides.length,c=gcols();
+  if(k==='Escape'||k==='g'||k==='G'){e.preventDefault();closeGrid();return true}
+  if(k==='f'||k==='F')return false;
+  e.preventDefault();
+  if(k==='ArrowRight')gsel=Math.min(n-1,gsel+1);else if(k==='ArrowLeft')gsel=Math.max(0,gsel-1);
+  else if(k==='ArrowDown')gsel=Math.min(n-1,gsel+c);else if(k==='ArrowUp')gsel=Math.max(0,gsel-c);
+  else if(k==='Home')gsel=0;else if(k==='End')gsel=n-1;
+  else if(k==='Enter'||k===' '){closeGrid();show(gsel);return true}
+  else if(/^[0-9]$/.test(k)){gbuf=(gbuf+k).slice(-3);let v=+gbuf;if(v<1||v>n){gbuf=k;v=+k}gsel=Math.max(0,Math.min(n-1,v-1));clearTimeout(gt);gt=setTimeout(()=>{gbuf=''},1500)}
+  else if(k==='Backspace')gbuf=gbuf.slice(0,-1);
+  gpaint();return true}
+
+/* input */
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');
+  if(a){if(a.dataset.act==='replay')replay();else if(a.dataset.act==='gclose')closeGrid();return}
+  const g=e.target.closest('[data-gi]');if(g){closeGrid();show(+g.dataset.gi);return}
+  const o=e.target.closest('.opt');if(o&&cur.quiz&&!cur.qs.rev){cur.qs.sel=+o.dataset.o;cur.qs.rev=true;render(false);applyStep(false);return}
+  const p=e.target.closest('#prog button');if(p){const s=+p.dataset.sec;show(slides.findIndex(x=>x.sec===s))}});
+$('#prev').onclick=back;$('#next').onclick=fwd;$('#gridBtn').onclick=()=>gv.hidden?openGrid():closeGrid();
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;if(gridKey(e))return;const k=e.key;
+  if(k==='ArrowRight'||k==='PageDown'||(k===' '&&!e.target.closest('button'))){e.preventDefault();fwd()}
+  else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();back()}
+  else if(k==='ArrowUp'||k==='ArrowDown'){const d=k==='ArrowUp'?-1:1;e.preventDefault();
+    if(cur.quiz&&!cur.qs.rev){const m=cur.quiz.o.length,s=cur.qs.sel;cur.qs.sel=s==null||s<0?(d>0?0:m-1):(s+d+m)%m;render(false);applyStep(false);return}
+    if(cur.vert&&cur.vert(d,e.shiftKey))return;
+    if(stage.scrollHeight>stage.clientHeight+4)stage.scrollBy({top:d*140,behavior:'smooth'})}
+  else if(k==='Home')show(0);else if(k==='End')show(slides.length-1);
+  else if(k==='t'||k==='T')toggleTimer();else if(k==='f'||k==='F')$('#fsBtn').click()});
+let tx=0,ty=0;stage.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+stage.addEventListener('touchend',e=>{if(e.target.closest('button,.scroll-x'))return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>70&&Math.abs(dy)<50)(dx<0?fwd:back)()},{passive:true});
+addEventListener('resize',()=>{if(cur)applyStep(false)});
+$('#themeBtn').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('deck-theme',r.dataset.theme)}catch(e){}};
+try{const th=localStorage.getItem('deck-theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
+$('#fsBtn').onclick=()=>{try{const p=document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(e){}};
+addEventListener('hashchange',()=>{const h=/^#slide-(\d+)$/.exec(location.hash);if(h&&+h[1]-1!==idx)show(+h[1]-1)});
+
+/* API untuk skrip uji & PDF (scripts/*.js) */
+window.deck={count:()=>slides.length,
+  go:(i,mode)=>show(i,mode==='last'?{last:true}:{instant:true}),
+  state:()=>({idx,step,steps:nsteps(cur),kind:kindOf(cur),title:titleOf(cur,idx),sec:cur.sec}),
+  titles:()=>slides.map(titleOf),
+  print:on=>{document.documentElement.classList.toggle('print',!!on);document.documentElement.classList.toggle('rm',!!on||rm.matches);if(T.run)toggleTimer()},
+  totalMin:TOTAL_MIN};
+
+resetTimer();
+const m0=/^#slide-(\d+)$/.exec(location.hash);show(m0?+m0[1]-1:0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "asa-slides",
+  "version": "2.3.0",
+  "private": true,
+  "description": "Agent skill that turns PDF/Markdown course or training material into interactive, animated HTML slide decks with 2D/3D motion-graphic explainers.",
+  "scripts": {
+    "uji": "node scripts/uji-deck.js",
+    "audit": "node scripts/audit-slop.js",
+    "kontak": "node scripts/kontak-sheet.js",
+    "pdf": "node scripts/render-pdf.js",
+    "ikon": "node scripts/fa-sprite.js",
+    "cek-template": "node scripts/uji-deck.js assets/engine-template.html && node scripts/audit-slop.js assets/engine-template.html",
+    "gif": "node scripts/rekam-gif.js",
+    "hero": "node scripts/rekam-deck-gif.js"
+  },
+  "devDependencies": {
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "pdf-lib": "^1.17.1",
+    "playwright": "^1.47.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asashades/asa-slides.git"
+  }
+}

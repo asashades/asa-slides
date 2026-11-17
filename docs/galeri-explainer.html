@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Galeri Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!--
+  GALERI EXPLAINER · slide-interaktif-animatif
+  Dikirim ke user di Fase 3 supaya bisa memilih kode explainer per konsep.
+  Tiap demo memakai atribut yang sama dengan engine-template.html:
+    data-from / data-to  : tampil mulai/sampai tahap tertentu (.on)
+    data-move="n"        : pindah ke posisi/keadaan kedua mulai tahap n (.mv)
+    data-now="a b"       : aktif hanya di tahap a, b (.now); kelas .only menyembunyikannya di tahap lain
+    .stage[data-s="n"]   : keadaan per tahap untuk CSS (level air, sudut timbangan, posisi token)
+  Contoh angka di demo bersifat ilustrasi.
+-->
+<style>
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --surface-2:#E7EDF1; --ink:#13202A; --muted:#4D5B67; --line:#D0D9E0;
+  --accent:#0B6E8A; --accent-ink:#FFFFFF; --accent-soft:#DCEEF3;
+  --bad:#B4382C; --bad-soft:#F8E2DE; --warn:#8F5B05; --warn-soft:#FAEDD3; --good:#1B7548; --good-soft:#DCF0E4;
+  --f-head:'Bricolage Grotesque',system-ui,sans-serif; --f-body:'Plus Jakarta Sans',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.22,.7,.2,1); color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F161C; --surface:#162028; --surface-2:#1E2A33; --ink:#E6ECF1; --muted:#A2B0BB; --line:#2A3843;
+  --accent:#5BBBD3; --accent-ink:#0A1A20; --accent-soft:#143440;
+  --bad:#EE8B7F; --bad-soft:#3A201E; --warn:#E2B158; --warn-soft:#382C14; --good:#6CCB9B; --good-soft:#163226; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F161C; --surface:#162028; --surface-2:#1E2A33; --ink:#E6ECF1; --muted:#A2B0BB; --line:#2A3843;
+  --accent:#5BBBD3; --accent-ink:#0A1A20; --accent-soft:#143440;
+  --bad:#EE8B7F; --bad-soft:#3A201E; --warn:#E2B158; --warn-soft:#382C14; --good:#6CCB9B; --good-soft:#163226; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+.fa{width:1em;height:1em;fill:currentColor;vertical-align:-.125em}
+.wrap{max-width:1320px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left))}
+.top{display:flex;flex-wrap:wrap;align-items:end;gap:12px 24px;margin-bottom:22px}
+.top h1{font:700 clamp(1.8rem,3.4vw,2.6rem)/1.1 var(--f-head);margin:0;flex:1 1 320px}
+.top p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.how{font:500 .9rem var(--f-mono);color:var(--muted)}
+.how code{white-space:nowrap;font:600 .9rem var(--f-mono);color:var(--ink);background:var(--surface-2);padding:1px 6px;border-radius:5px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 14px;font:600 .9rem var(--f-body);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.ib{width:34px;height:34px;padding:0;justify-content:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:18px}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px;display:grid;gap:8px;min-width:0;outline:none}
+.demo:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.dh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.code{font:700 1rem var(--f-mono);color:var(--accent)}
+.dh h2{font:650 1.1rem/1.25 var(--f-body);margin:0}
+.dim{font:600 .75rem var(--f-mono);color:var(--muted);margin-left:auto}
+.stage{display:block;width:100%;height:auto;aspect-ratio:360/210}
+.cap{margin:0;min-height:3.1em;font-size:.95rem}
+.use{margin:0;font-size:.875rem;color:var(--muted)}
+.use b{color:var(--ink);font-weight:600}
+.ctl{display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--line)}
+.dots{display:flex;gap:4px;margin-right:auto}.dots i{width:16px;height:5px;border-radius:3px;background:var(--surface-2)}.dots i.done{background:color-mix(in srgb,var(--accent) 45%,var(--surface-2))}.dots i.now{background:var(--accent)}
+
+/* ---- sistem tahap ---- */
+[data-from]{opacity:0;transition:opacity .45s var(--ease),transform .7s var(--ease)}
+[data-from].on{opacity:1}
+[data-move]{transition:transform .8s var(--ease),fill .4s,opacity .4s}
+.only:not(.now){opacity:0}
+.only{transition:opacity .35s}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .9s var(--ease),opacity .2s}.draw.on{stroke-dashoffset:0}
+.grow-y{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform .8s var(--ease),opacity .2s}.grow-y.on{transform:none}
+.rm *{transition:none!important;animation:none!important}
+
+/* ---- gaya umum ilustrasi ---- */
+.stage text{font:600 12.5px var(--f-body);fill:var(--ink)}
+.stage .sm{font:500 11px var(--f-mono);fill:var(--muted)}
+.stage .num{font:600 12px var(--f-mono)}
+.ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lnm{fill:none;stroke:var(--muted);stroke-width:1.5}
+.f-acc{fill:var(--accent)}.f-warn{fill:var(--warn)}.f-good{fill:var(--good)}.f-bad{fill:var(--bad)}.f-ink{fill:var(--ink)}.f-mut{fill:var(--muted)}
+.f-surf{fill:var(--surface);stroke:var(--ink);stroke-width:2}.f-s2{fill:var(--surface-2);stroke:var(--ink);stroke-width:1.5}
+.t-on{fill:var(--accent-ink)!important}
+
+/* E1 bongkar tas */
+#e1 .flap.mv{transform:translate(48px,-44px)}
+#e1 .body.mv{transform:translate(-70px,8px)}
+#e1 .zip.mv{transform:translate(98px,22px)}
+/* E2 menara */
+#e2 .blk{opacity:0;transform:translateY(-12px);transition:opacity .35s var(--ease),transform .45s var(--ease);transition-delay:calc(var(--i) * 90ms)}
+#e2 .on .blk{opacity:1;transform:none}
+/* E3 alur */
+#e3 .tok{transition:transform .9s var(--ease)}
+#e3[data-s="2"] .tok{transform:translate(130px,0)}#e3[data-s="3"] .tok{transform:translate(260px,0)}
+#e3 .stn.now rect{stroke:var(--accent);stroke-width:3}
+/* E4 sortir */
+#e4 .n1.mv{transform:translate(6px,138px)}#e4 .n2.mv{transform:translate(142px,138px)}#e4 .n3.mv{transform:translate(-112px,138px)}#e4 .n4.mv{transform:translate(-138px,138px)}
+#e4 .n2.mv rect{fill:var(--bad-soft);stroke:var(--bad)}#e4 .n2 .x{opacity:0;transition:opacity .3s .5s}#e4 .n2.mv .x{opacity:1}
+/* E5 bejana */
+#e5 .liq{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform 1s var(--ease)}
+#e5[data-s="1"] .la,#e5[data-s="2"] .la{transform:scaleY(.8)}#e5[data-s="3"] .la{transform:scaleY(.45)}#e5[data-s="3"] .lb{transform:scaleY(.38)}
+/* E7 timbangan */
+#e7 .beam{transform-box:view-box;transform-origin:180px 70px;transition:transform 1s var(--ease)}
+#e7[data-s="1"] .beam{transform:rotate(-9deg)}#e7[data-s="2"] .beam{transform:rotate(7deg)}#e7[data-s="3"] .beam{transform:rotate(0)}
+/* E10 split, E11 irisan */
+#e11 .ra{transform:translate(-34px,0)}#e11 .rb{transform:translate(34px,0)}#e11 .ra.mv,#e11 .rb.mv{transform:none}
+#e11 .ov{fill:var(--warn);opacity:0}#e11 .ov.on{opacity:.55}
+/* E13 tokoh */
+#e13 .pain path{stroke:var(--bad)}
+/* 3D */
+.three{position:relative;aspect-ratio:360/210;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.three canvas{display:block;width:100%;height:100%}
+.three .l3{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font:600 12px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap;opacity:0;transition:opacity .4s;pointer-events:none}
+.three .l3.on{opacity:1}
+.three .nogl{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<!--FA-SPRITE--><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="fa-chevron-left" viewBox="0 0 320 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/></symbol><symbol id="fa-chevron-right" viewBox="0 0 320 512"><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></symbol><symbol id="fa-play" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></symbol><symbol id="fa-pause" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></symbol></defs></svg><!--/FA-SPRITE-->
+<div class="wrap">
+  <div class="top">
+    <div style="flex:1 1 420px">
+      <h1>Galeri explainer animation</h1>
+      <p>Tiap demo memperlihatkan satu cara menjelaskan konsep lewat gerak. Pilih kode untuk tiap konsep di materi Anda.</p>
+      <p class="how">Contoh jawaban: <code>konsep 1 → E4</code> <code>konsep 2 → E11 3D</code> <code>sisanya terserah</code></p>
+    </div>
+    <button class="btn" id="allBtn" type="button"></button>
+  </div>
+  <div class="grid" id="grid">
+
+  <!-- E1 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Satu tas jadi, seperti yang dilihat pembeli.|Penutup kulit diangkat: satu komponen.|Badan kanvas bergeser: komponen kedua.|Ritsleting dan gesper terlepas. Tiap bagian punya biayanya sendiri.">
+    <div class="dh"><span class="code">E1</span><h2>Bongkar benda</h2><span class="dim">2D · 3D</span></div>
+    <svg class="stage" id="e1" viewBox="0 0 360 210" role="img" aria-label="Tas terurai menjadi kulit, kanvas, ritsleting dan gesper">
+      <g class="body" data-move="2"><path class="ln" d="M150 62 V44 A30 30 0 0 1 210 44 V62"/><rect class="f-acc" x="120" y="62" width="120" height="122" rx="12"/><text class="t-on" x="180" y="168" text-anchor="middle">kanvas</text></g>
+      <g class="zip" data-move="3"><rect class="f-ink" x="140" y="132" width="80" height="6" rx="3"/><rect class="f-mut" x="140" y="96" width="14" height="18" rx="3"/><rect class="f-mut" x="206" y="96" width="14" height="18" rx="3"/></g>
+      <g class="flap" data-move="1"><path class="f-warn" d="M120 74 Q120 62 132 62 H228 Q240 62 240 74 V104 Q180 126 120 104 Z"/></g>
+      <text data-from="1" x="302" y="40">kulit</text>
+      <text data-from="3" x="268" y="186" text-anchor="middle">ritsleting, gesper</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> konsep yang tersusun dari komponen.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E1 3D -->
+  <section class="demo" tabindex="0" data-steps="5" data-3d="1" data-caps="Tas voxel utuh. Kamera bisa diputar per tahap.|Penutup kulit terangkat dari badan tas.|Panel depan kanvas maju keluar.|Ritsleting dan gesper melayang ke samping.|Kamera memutar: semua komponen terlihat terpisah.">
+    <div class="dh"><span class="code">E1</span><h2>Bongkar benda, versi 3D</h2><span class="dim">three.js</span></div>
+    <div class="three" id="t3"><canvas></canvas><span class="l3" data-k="flap">kulit</span><span class="l3" data-k="front">kanvas</span><span class="l3" data-k="zip">ritsleting, gesper</span></div>
+    <p class="cap"></p><p class="use"><b>3D dipakai bila</b> ruang membantu: bagian dalam, lapisan, pandangan terurai.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E2 -->
+  <section class="demo" tabindex="0" data-steps="5" data-caps="Satu tas, biayanya belum disusun.|Balok bahan ditumpuk: porsi terbesar.|Balok upah langsung di atasnya.|Balok biaya pabrik paling atas.|Tinggi menara = biaya satu tas. Porsinya langsung terlihat.">
+    <div class="dh"><span class="code">E2</span><h2>Menara proporsi</h2><span class="dim">2D · 3D</span></div>
+    <svg class="stage" id="e2" viewBox="0 0 360 210" role="img" aria-label="Menara balok biaya bertumpuk">
+      <line class="lnm" x1="90" y1="192" x2="270" y2="192"/>
+      <g data-from="1"><rect class="blk f-good" style="--i:0" x="150" y="172" width="60" height="18" rx="2"/><rect class="blk f-good" style="--i:1" x="150" y="152" width="60" height="18" rx="2"/><rect class="blk f-good" style="--i:2" x="150" y="132" width="60" height="18" rx="2"/><rect class="blk f-good" style="--i:3" x="150" y="112" width="60" height="18" rx="2"/><rect class="blk f-good" style="--i:4" x="150" y="92" width="60" height="18" rx="2"/><text x="220" y="146">Bahan</text></g>
+      <g data-from="2"><rect class="blk f-warn" style="--i:0" x="150" y="72" width="60" height="18" rx="2"/><rect class="blk f-warn" style="--i:1" x="150" y="52" width="60" height="18" rx="2"/><rect class="blk f-warn" style="--i:2" x="150" y="32" width="60" height="18" rx="2"/><text x="220" y="66">Upah</text></g>
+      <g data-from="3"><rect class="blk f-acc" style="--i:0" x="150" y="12" width="60" height="18" rx="2"/><text x="220" y="26">Pabrik</text></g>
+      <path class="ln draw" data-from="4" pathLength="1" d="M140 12 H130 V190 H140"/><text data-from="4" x="122" y="105" text-anchor="end">9 balok</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> komposisi angka dan porsi.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E3 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Tiga tahap proses, belum ada yang bergerak.|Bahan masuk di tahap pertama.|Bahan diproses: token berpindah, jalurnya tergambar.|Sampai di barang jadi. Urutan proses terbaca dari geraknya.">
+    <div class="dh"><span class="code">E3</span><h2>Alur dengan token bergerak</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e3" viewBox="0 0 360 210" role="img" aria-label="Token bergerak dari bahan ke proses ke barang jadi">
+      <path class="lnm" d="M85 100 H145 M215 100 H275"/>
+      <path class="ln draw" data-from="2" pathLength="1" d="M85 100 H145"/><path class="ln draw" data-from="3" pathLength="1" d="M215 100 H275"/>
+      <g class="stn" data-now="1"><rect class="f-surf" x="15" y="75" width="70" height="50" rx="8"/><text x="50" y="146" text-anchor="middle">Bahan</text></g>
+      <g class="stn" data-now="2"><rect class="f-surf" x="145" y="75" width="70" height="50" rx="8"/><text x="180" y="146" text-anchor="middle">Proses</text></g>
+      <g class="stn" data-now="3"><rect class="f-surf" x="275" y="75" width="70" height="50" rx="8"/><text x="310" y="146" text-anchor="middle">Barang jadi</text></g>
+      <g class="tok" data-from="1"><rect class="f-warn" x="38" y="88" width="24" height="24" rx="4"/></g>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> proses berurutan, siklus, aliran barang.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E4 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Empat nota pengeluaran bulan ini.|Nota kain masuk biaya produksi.|Nota iklan tidak ikut: itu biaya pemasaran.|Upah dan listrik ikut masuk. Pemilahan terlihat dari ke mana tiap nota pergi.">
+    <div class="dh"><span class="code">E4</span><h2>Sortir ke kotak</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e4" viewBox="0 0 360 210" role="img" aria-label="Nota dipilah ke kotak biaya produksi dan bukan produksi">
+      <rect class="f-s2" x="30" y="148" width="190" height="56" rx="8"/><text class="sm" x="36" y="142">biaya produksi</text>
+      <rect class="f-s2" x="240" y="148" width="100" height="56" rx="8"/><text class="sm" x="246" y="142">bukan produksi</text>
+      <g class="n1" data-move="1"><rect class="f-surf" x="30" y="16" width="56" height="38" rx="5"/><text x="58" y="40" text-anchor="middle">Kain</text></g>
+      <g class="n2" data-move="2"><rect class="f-surf" x="120" y="16" width="56" height="38" rx="5"/><text x="148" y="40" text-anchor="middle">Iklan</text><path class="x ln" d="M124 20 L172 50" style="stroke:var(--bad)"/></g>
+      <g class="n3" data-move="3"><rect class="f-surf" x="210" y="16" width="56" height="38" rx="5"/><text x="238" y="40" text-anchor="middle">Upah</text></g>
+      <g class="n4" data-move="3"><rect class="f-surf" x="300" y="16" width="56" height="38" rx="5"/><text x="328" y="40" text-anchor="middle">Listrik</text></g>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> klasifikasi, memilah yang ikut dan tidak.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E5 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Dua bejana: persediaan dan harga pokok penjualan.|Biaya produksi mengisi bejana persediaan.|Saat produk terjual, biaya mengalir keluar.|Yang terjual pindah ke HPP, sisanya tetap jadi persediaan.">
+    <div class="dh"><span class="code">E5</span><h2>Bejana dan aliran</h2><span class="dim">2D · 3D</span></div>
+    <svg class="stage" id="e5" viewBox="0 0 360 210" role="img" aria-label="Isi bejana persediaan mengalir ke bejana HPP">
+      <defs><clipPath id="cA"><rect x="42" y="62" width="96" height="124" rx="6"/></clipPath><clipPath id="cB"><rect x="222" y="62" width="96" height="124" rx="6"/></clipPath></defs>
+      <path class="ln draw" data-from="1" pathLength="1" d="M90 10 V50"/><path class="ln" data-from="1" d="M83 42 L90 52 L97 42"/>
+      <g clip-path="url(#cA)"><rect class="liq la f-acc" x="42" y="62" width="96" height="124"/></g>
+      <g clip-path="url(#cB)"><rect class="liq lb f-warn" x="222" y="62" width="96" height="124"/></g>
+      <rect class="ln" x="40" y="60" width="100" height="128" rx="8"/><rect class="ln" x="220" y="60" width="100" height="128" rx="8"/>
+      <path class="ln draw" data-from="2" pathLength="1" d="M140 90 C180 40 200 40 228 70"/>
+      <text x="90" y="204" text-anchor="middle">Persediaan</text><text x="270" y="204" text-anchor="middle">HPP</text>
+      <text class="sm" data-from="1" x="100" y="24">biaya produksi</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> akumulasi, persediaan, kebocoran.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E6 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Sumbu: volume produksi dan biaya.|Biaya tetap: garisnya datar, tidak peduli volume.|Biaya variabel: naik sebanding volume.|Semi-variabel: ada dasar tetap, lalu naik bertingkat.">
+    <div class="dh"><span class="code">E6</span><h2>Kurva menggambar sendiri</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e6" viewBox="0 0 360 210" role="img" aria-label="Kurva biaya tetap, variabel, dan semi-variabel terhadap volume">
+      <path class="lnm" d="M40 20 V180 H340"/><text class="sm" x="336" y="198" text-anchor="end">volume →</text><text class="sm" x="44" y="16">biaya</text>
+      <path class="ln draw" data-from="1" pathLength="1" d="M40 120 H330" style="stroke:var(--accent);stroke-width:3"/><text data-from="1" x="48" y="114">tetap</text>
+      <path class="ln draw" data-from="2" pathLength="1" d="M40 180 L330 40" style="stroke:var(--warn);stroke-width:3"/><text data-from="2" x="300" y="40" text-anchor="end">variabel</text>
+      <path class="ln draw" data-from="3" pathLength="1" d="M40 160 H130 V140 H220 V115 H330" style="stroke:var(--good);stroke-width:3"/><text data-from="3" x="330" y="106" text-anchor="end">semi-variabel</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> perilaku terhadap variabel, tren.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E7 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Timbangan kosong, seimbang.|Harga jual di kiri: timbangan miring ke kiri.|Biaya per unit lebih berat: miring ke kanan, rugi.|Harga dinaikkan sampai seimbang: titik impas.">
+    <div class="dh"><span class="code">E7</span><h2>Timbangan</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e7" viewBox="0 0 360 210" role="img" aria-label="Timbangan harga jual dan biaya menuju titik impas">
+      <path class="f-mut" d="M180 70 L160 196 H200 Z"/>
+      <g class="beam">
+        <line class="ln" x1="70" y1="70" x2="290" y2="70" style="stroke-width:4"/>
+        <path class="ln" d="M70 70 L50 120 H90 Z M290 70 L270 120 H310 Z" style="fill:var(--surface-2)"/>
+        <rect class="f-acc" data-from="1" x="56" y="96" width="28" height="22" rx="3"/><text data-from="1" x="70" y="140" text-anchor="middle">harga</text>
+        <rect class="f-bad" data-from="2" x="272" y="88" width="36" height="30" rx="3"/><text data-from="2" x="290" y="140" text-anchor="middle">biaya</text>
+        <rect class="f-acc" data-from="3" x="58" y="80" width="24" height="14" rx="3"/>
+      </g>
+      <text data-from="3" x="180" y="40" text-anchor="middle">impas</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> trade-off, titik impas, keseimbangan.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E8 -->
+  <section class="demo" tabindex="0" data-steps="3" data-caps="Yang terlihat pemilik usaha: bahan dan upah.|Kabut tersingkap: listrik dan sewa ada di bawah air.|Paling dalam: penyusutan alat dan upah pemilik yang sering terlupa.">
+    <div class="dh"><span class="code">E8</span><h2>Gunung es</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e8" viewBox="0 0 360 210" role="img" aria-label="Gunung es biaya terlihat dan tersembunyi">
+      <defs><clipPath id="ice8"><path d="M150 14 L178 70 L214 128 L196 186 L150 204 L104 186 L86 128 L122 70 Z"/></clipPath></defs>
+      <rect x="0" y="70" width="360" height="140" style="fill:var(--accent-soft)"/>
+      <g clip-path="url(#ice8)"><rect x="80" y="10" width="140" height="60" style="fill:var(--bad-soft)"/><rect x="80" y="70" width="140" height="64" style="fill:var(--warn-soft)"/><rect x="80" y="134" width="140" height="76" style="fill:var(--good-soft)"/></g>
+      <path class="ln" d="M150 14 L178 70 L214 128 L196 186 L150 204 L104 186 L86 128 L122 70 Z"/>
+      <rect data-from="0" data-to="0" x="0" y="72" width="360" height="140" style="fill:var(--accent-soft)"/>
+      <rect data-from="0" data-to="1" x="0" y="134" width="360" height="78" style="fill:var(--accent-soft)"/>
+      <line x1="0" y1="70" x2="360" y2="70" style="stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5"/>
+      <text x="230" y="50">bahan, upah</text><text data-from="1" x="230" y="108">listrik, sewa</text><text data-from="2" x="214" y="170">penyusutan,</text><text data-from="2" x="214" y="186">upah pemilik</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> yang terlihat vs tersembunyi, akar masalah.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E9 -->
+  <section class="demo" tabindex="0" data-steps="5" data-caps="Struk kosong untuk satu tas.|Baris pertama: bahan.|Baris kedua: upah langsung.|Baris ketiga: biaya pabrik.|Garis total: harga pokok satu tas.">
+    <div class="dh"><span class="code">E9</span><h2>Struk terisi</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e9" viewBox="0 0 360 210" role="img" aria-label="Struk biaya satu tas terisi baris demi baris">
+      <path class="f-surf" d="M100 10 H260 V196 L250 204 L240 196 L230 204 L220 196 L210 204 L200 196 L190 204 L180 196 L170 204 L160 196 L150 204 L140 196 L130 204 L120 196 L110 204 L100 196 Z"/>
+      <text class="sm" x="180" y="32" text-anchor="middle">STRUK · 1 TAS</text>
+      <g data-from="1"><text x="114" y="66">Bahan</text><text class="num" x="246" y="66" text-anchor="end">85.000</text></g>
+      <g data-from="2"><text x="114" y="92">Upah</text><text class="num" x="246" y="92" text-anchor="end">45.000</text></g>
+      <g data-from="3"><text x="114" y="118">Pabrik</text><text class="num" x="246" y="118" text-anchor="end">20.000</text></g>
+      <path class="ln draw" data-from="4" pathLength="1" d="M114 136 H246"/>
+      <g data-from="4"><text x="114" y="160" style="font-weight:700">Total</text><text class="num" x="246" y="160" text-anchor="end" style="font-weight:700">150.000</text></g>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> hitungan bertahap, menyusun total.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E10 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Dua skenario berdampingan.|500 tas: biaya pabrik per tas setinggi ini.|800 tas: biaya tetap terbagi ke lebih banyak tas.|Selisihnya langsung terlihat dari beda tinggi.">
+    <div class="dh"><span class="code">E10</span><h2>Split sebelum/sesudah</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e10" viewBox="0 0 360 210" role="img" aria-label="Perbandingan biaya per tas pada 500 dan 800 tas">
+      <line class="lnm" x1="180" y1="10" x2="180" y2="200"/>
+      <text x="90" y="24" text-anchor="middle">500 tas</text><text x="270" y="24" text-anchor="middle">800 tas</text>
+      <line class="lnm" x1="40" y1="186" x2="140" y2="186"/><line class="lnm" x1="220" y1="186" x2="320" y2="186"/>
+      <rect class="grow-y f-acc" data-from="1" x="65" y="56" width="50" height="130" rx="3"/><text class="num t-on" data-from="1" x="90" y="76" text-anchor="middle">20.000</text>
+      <rect class="grow-y f-acc" data-from="2" x="245" y="87" width="50" height="99" rx="3"/><text class="num t-on" data-from="2" x="270" y="106" text-anchor="middle">15.200</text>
+      <path class="ln draw" data-from="3" pathLength="1" d="M120 56 H330 M320 56 V87" style="stroke:var(--good)"/><text data-from="3" x="316" y="78" text-anchor="end" style="fill:var(--good)">−4.800</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> perbandingan skenario, efek perubahan.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E11 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Dua kelompok biaya, masih terpisah.|Keduanya bergeser dan ternyata beririsan.|Irisannya upah langsung: dihitung di keduanya.|Karena itu menjumlah keduanya menghitung upah dua kali.">
+    <div class="dh"><span class="code">E11</span><h2>Irisan hidup</h2><span class="dim">2D · 3D</span></div>
+    <svg class="stage" id="e11" viewBox="0 0 360 210" role="img" aria-label="Prime cost dan conversion cost beririsan pada upah langsung">
+      <g class="ra" data-move="1"><rect x="40" y="50" width="170" height="110" rx="12" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="56" y="76">Prime cost</text><text class="sm" x="56" y="146">bahan</text></g>
+      <g class="rb" data-move="1"><rect x="150" y="50" width="170" height="110" rx="12" style="fill:none;stroke:var(--good);stroke-width:2"/><text x="304" y="76" text-anchor="end">Conversion</text><text class="sm" x="304" y="146" text-anchor="end">pabrik</text></g>
+      <rect class="ov" data-from="2" x="151" y="51" width="58" height="108"/>
+      <text data-from="2" x="180" y="110" text-anchor="middle">upah</text>
+      <text class="sm" data-from="3" x="180" y="186" text-anchor="middle">bahan + upah | upah + pabrik</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> konsep yang tumpang tindih.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E12 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Akar: total biaya usaha.|Bercabang dua: biaya produksi dan biaya periode.|Biaya produksi bercabang ke bahan, upah, pabrik.|Biaya periode ke pemasaran dan administrasi.">
+    <div class="dh"><span class="code">E12</span><h2>Pohon tumbuh</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e12" viewBox="0 0 360 210" role="img" aria-label="Pohon klasifikasi biaya">
+      <path class="ln draw" data-from="1" pathLength="1" d="M180 42 V58 H100 V78 M180 58 H270 V78"/>
+      <path class="ln draw" data-from="2" pathLength="1" d="M100 104 V120 H40 V150 M100 120 V150 M100 120 H160 V150"/>
+      <path class="ln draw" data-from="3" pathLength="1" d="M270 104 V120 H240 V150 M270 120 H312 V150"/>
+      <g><rect class="f-surf" x="130" y="14" width="100" height="28" rx="6"/><text x="180" y="33" text-anchor="middle">Total biaya</text></g>
+      <g data-from="1"><rect class="f-surf" x="55" y="78" width="90" height="26" rx="6"/><text x="100" y="96" text-anchor="middle">Produksi</text><rect class="f-surf" x="225" y="78" width="90" height="26" rx="6"/><text x="270" y="96" text-anchor="middle">Periode</text></g>
+      <g data-from="2"><rect class="f-s2" x="12" y="150" width="56" height="26" rx="6"/><text x="40" y="168" text-anchor="middle">Bahan</text><rect class="f-s2" x="72" y="150" width="56" height="26" rx="6"/><text x="100" y="168" text-anchor="middle">Upah</text><rect class="f-s2" x="132" y="150" width="56" height="26" rx="6"/><text x="160" y="168" text-anchor="middle">Pabrik</text></g>
+      <g data-from="3"><rect class="f-s2" x="204" y="150" width="72" height="26" rx="6"/><text x="240" y="168" text-anchor="middle">Pemasaran</text><rect class="f-s2" x="282" y="150" width="62" height="26" rx="6"/><text x="313" y="168" text-anchor="middle">Admin</text></g>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> taksonomi, peta konsep, klasifikasi bertingkat.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  <!-- E13 -->
+  <section class="demo" tabindex="0" data-steps="4" data-caps="Kepala nyeri sejak pagi.|Minum paracetamol.|Nyeri reda. Kelihatannya sembuh.|Obat habis, nyerinya kembali: penyebabnya belum diobati.">
+    <div class="dh"><span class="code">E13</span><h2>Tokoh dan analogi</h2><span class="dim">2D</span></div>
+    <svg class="stage" id="e13" viewBox="0 0 360 210" role="img" aria-label="Tokoh sakit kepala, minum obat, reda, lalu kambuh">
+      <circle cx="180" cy="98" r="52" style="fill:var(--surface-2);stroke:var(--ink);stroke-width:2.5"/>
+      <circle class="f-ink" cx="162" cy="88" r="4"/><circle class="f-ink" cx="198" cy="88" r="4"/>
+      <path class="ln only" data-now="0 1 3" d="M162 124 Q180 110 198 124"/>
+      <path class="ln only" data-now="2" d="M162 116 Q180 132 198 116"/>
+      <g class="pain only" data-now="0 1 3"><path class="ln" d="M118 52 L128 62 L120 66 L132 76"/><path class="ln" d="M242 52 L232 62 L240 66 L228 76"/></g>
+      <g class="only" data-now="1"><rect x="214" y="122" width="34" height="14" rx="7" style="fill:var(--surface);stroke:var(--accent);stroke-width:2"/><line x1="231" y1="122" x2="231" y2="136" style="stroke:var(--accent);stroke-width:2"/></g>
+      <text class="only" data-now="3" x="180" y="186" text-anchor="middle" style="fill:var(--bad)">kambuh</text>
+      <text class="only" data-now="2" x="180" y="186" text-anchor="middle" style="fill:var(--good)">reda</text>
+    </svg>
+    <p class="cap"></p><p class="use"><b>Cocok untuk:</b> analogi sehari-hari, sebab-akibat.</p>
+    <div class="ctl"><div class="dots"></div></div>
+  </section>
+
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ico=n=>'<svg class="fa" aria-hidden="true"><use href="#fa-'+n+'"/></svg>';
+const rmq=matchMedia('(prefers-reduced-motion: reduce)');
+document.documentElement.classList.toggle('rm',rmq.matches);
+let autoAll=!rmq.matches;
+const demos=$$('.demo');
+
+demos.forEach(d=>{
+  d.n=+d.dataset.steps;d.s=0;d.caps=(d.dataset.caps||'').split('|');d.vis=false;d.hold=0;d.user=false;
+  d.stage=d.querySelector('.stage')||d.querySelector('.three');
+  const ctl=d.querySelector('.ctl');
+  d.querySelector('.dots').innerHTML='<i></i>'.repeat(d.n);
+  ctl.insertAdjacentHTML('beforeend','<button class="btn ib" type="button" data-a="prev" aria-label="Tahap sebelumnya">'+ico('chevron-left')+'</button><button class="btn ib" type="button" data-a="next" aria-label="Tahap berikutnya">'+ico('chevron-right')+'</button>');
+  ctl.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;d.user=true;go(d,d.s+(b.dataset.a==='next'?1:-1))});
+  d.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();d.user=true;go(d,d.s+(e.key==='ArrowRight'?1:-1))}});
+  d.addEventListener('pointerenter',()=>{d.hover=true});d.addEventListener('pointerleave',()=>{d.hover=false});
+  paint(d);
+});
+
+function go(d,s){d.s=(s+d.n)%d.n;paint(d)}
+function paint(d){const s=d.s,st=d.stage;st.dataset.s=s;
+  $$('[data-from]',d).forEach(e=>{const f=+e.dataset.from,t=e.dataset.to==null?99:+e.dataset.to;e.classList.toggle('on',s>=f&&s<=t)});
+  $$('[data-move]',d).forEach(e=>e.classList.toggle('mv',s>=+e.dataset.move));
+  $$('[data-now]',d).forEach(e=>e.classList.toggle('now',e.dataset.now.split(/[\s,]+/).map(Number).includes(s)));
+  d.querySelector('.cap').textContent=d.caps[s]||'';
+  $$('.dots i',d).forEach((x,i)=>{x.className=i<s?'done':(i===s?'now':'')});
+  if(d.three)d.three.to(s,!document.documentElement.classList.contains('rm'));}
+
+/* putar otomatis: maju satu tahap tiap 1,7 detik, tahan sebentar di tahap terakhir */
+const io=new IntersectionObserver(es=>es.forEach(e=>{e.target.vis=e.isIntersecting;if(e.isIntersecting&&e.target.dataset['3d'])init3D(e.target)}),{threshold:.35});
+demos.forEach(d=>io.observe(d));
+setInterval(()=>{if(!autoAll)return;demos.forEach(d=>{if(!d.vis||d.hover||d.user||d.contains(document.activeElement))return;
+  if(d.s===d.n-1){if(++d.hold<2)return;d.hold=0}go(d,d.s+1)})},1700);
+const allBtn=document.getElementById('allBtn');
+const paintAll=()=>{allBtn.innerHTML=ico(autoAll?'pause':'play')+(autoAll?' Jeda semua':' Putar semua')};
+allBtn.onclick=()=>{autoAll=!autoAll;if(autoAll)demos.forEach(d=>{d.user=false});paintAll()};paintAll();
+
+/* ---------- demo 3D: tas voxel terurai (three.js) ---------- */
+function init3D(d){if(d.three||d.threeFail)return;const box=d.querySelector('.three');
+  if(!window.THREE){d.threeFail=true;box.insertAdjacentHTML('beforeend','<div class="nogl">Demo 3D butuh three.js dari cdnjs.cloudflare.com. Buka halaman ini dengan koneksi internet.</div>');return}
+  let R;try{R=new THREE.WebGLRenderer({canvas:box.querySelector('canvas'),antialias:true,preserveDrawingBuffer:true})}catch(e){d.threeFail=true;box.insertAdjacentHTML('beforeend','<div class="nogl">Browser ini tidak mendukung WebGL.</div>');return}
+  const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const col=n=>new THREE.Color(css(n));
+  R.setPixelRatio(Math.min(devicePixelRatio,2));R.setClearColor(col('--surface-2'));
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,360/210,.1,100);
+  sc.add(new THREE.AmbientLight(0xffffff,.72));const dl=new THREE.DirectionalLight(0xffffff,.55);dl.position.set(3,5,4);sc.add(dl);
+  const mk=(w,h,dp,c)=>{const g=new THREE.BoxGeometry(w,h,dp),m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:col(c)}));
+    m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:col('--ink')})));return m};
+  const grp=(...ms)=>{const g=new THREE.Group();ms.forEach(m=>g.add(m));sc.add(g);return g};
+  // badan belakang + pegangan
+  const back=mk(1.6,1.8,.5,'--accent');back.position.set(0,.9,-.1);
+  const hL=mk(.1,.45,.1,'--ink');hL.position.set(-.35,2.0,-.1);const hR=mk(.1,.45,.1,'--ink');hR.position.set(.35,2.0,-.1);const hT=mk(.8,.1,.1,'--ink');hT.position.set(0,2.2,-.1);
+  grp(back,hL,hR,hT);
+  const front=grp(mk(1.6,1.8,.12,'--accent'));front.children[0].position.set(0,.9,.21);
+  const flap=grp(mk(1.64,.75,.12,'--warn'));flap.children[0].position.set(0,1.5,.33);
+  const zipM=mk(1.0,.07,.06,'--ink');zipM.position.set(0,.6,.3);const b1=mk(.16,.24,.08,'--muted');b1.position.set(-.45,1.05,.4);const b2=mk(.16,.24,.08,'--muted');b2.position.set(.45,1.05,.4);
+  const zip=grp(zipM,b1,b2);
+  const parts={flap,front,zip};
+  // keadaan per tahap: [posisi grup flap, front, zip] dan kamera
+  const S=[
+    {flap:[0,0,0,0],front:[0,0,0],zip:[0,0,0],cam:[4.2,3.0,6.4]},
+    {flap:[0,.8,.35,-.45],front:[0,0,0],zip:[0,0,0],cam:[4.2,3.0,6.4]},
+    {flap:[0,.8,.35,-.45],front:[0,0,1.1],zip:[0,0,0],cam:[4.2,3.0,6.4]},
+    {flap:[0,.8,.35,-.45],front:[0,0,1.1],zip:[1.8,-.2,1.1],cam:[4.2,3.0,6.4]},
+    {flap:[0,.8,.35,-.45],front:[0,0,1.1],zip:[1.8,-.2,1.1],cam:[7.0,2.4,3.0]}];
+  let from=null,toS=S[0],t0=0,raf=0;const look=new THREE.Vector3(.5,1.05,.4);
+  const cur={flap:[0,0,0,0],front:[0,0,0],zip:[0,0,0],cam:S[0].cam.slice()};
+  const lerp=(a,b,k)=>a.map((v,i)=>v+(b[i]-v)*k);
+  const labels=$$('.l3',box);
+  function apply(){flap.position.set(cur.flap[0],cur.flap[1],cur.flap[2]);flap.rotation.x=cur.flap[3];
+    front.position.set(...cur.front);zip.position.set(...cur.zip);cam.position.set(...cur.cam);cam.lookAt(look);
+    const w=box.clientWidth,h=box.clientHeight;if(R.domElement.width!==Math.round(w*R.getPixelRatio())){R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+    R.render(sc,cam);
+    labels.forEach(l=>{const g=parts[l.dataset.k],v=new THREE.Vector3();new THREE.Box3().setFromObject(g).getCenter(v);v.y+=.2;v.project(cam);
+      l.style.left=((v.x+1)/2*w)+'px';l.style.top=((1-v.y)/2*h)+'px'})}
+  function frame(t){const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);
+    ['flap','front','zip','cam'].forEach(p=>{cur[p]=lerp(from[p],toS[p],e)});apply();if(k<1)raf=requestAnimationFrame(frame)}
+  d.three={to:(s,anim)=>{toS=S[s];labels.forEach(l=>l.classList.toggle('on',{flap:1,front:2,zip:3}[l.dataset.k]<=s));cancelAnimationFrame(raf);
+    if(!anim){['flap','front','zip','cam'].forEach(p=>{cur[p]=toS[p].slice()});apply();return}
+    from=JSON.parse(JSON.stringify(cur));t0=performance.now();raf=requestAnimationFrame(frame)}};
+  addEventListener('resize',()=>apply());
+  d.three.to(d.s,false);}
+
+window.galeri={count:()=>demos.length,go:(i,s)=>{const d=demos[i];d.user=true;if(d.dataset['3d'])init3D(d);go(d,s==='last'?d.n-1:s)},stop:()=>{autoAll=false;paintAll()}};
+})();
+</script>
+</body>
+</html>
