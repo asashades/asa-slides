@@ -24,7 +24,7 @@ Most AI-generated slides are bullets with fade-in. This skill asks the agent to 
 
 - **Ask first.** The agent asks for the type of presentation (lecture, training, project, thesis defence), duration, audience, theme and palette, whether to include quizzes, 2D or 3D, and motion intensity.
 - **Quizzes are optional.** Lectures and trainings can have quizzes, polls and timed exercises. Project presentations and thesis defences get a clean deck with no quiz slides, plus an optional backup section for Q&A.
-- **Choose explainers.** It sends a gallery of explainer types and recommends two or three per concept.
+- **Brainstorm choreography & choose explainers.** Instead of flat single-box diagrams, the agent pitches 2 creative multi-zone choreographies per concept—pairing tangible physical metaphors (Input → Transmission/Device → Output) with simultaneous motion chains—alongside the live gallery.
 - **Plan, then prototype, then build.** You approve a plan (run of show, slide list, storyboard per scene) and then a one-scene prototype before the full deck is made.
 - **Meaningful 3D.** 3D scenes (three.js) must show a recognisable object, such as a product coming apart. Abstract boxes and spheres are not allowed.
 - **Anti-slop checks.** An automated audit enforces no filler copy, Font Awesome icons instead of emoji, no coloured side or top stripes on cards, no purple gradients, no nested cards, and the rest of an anti-pattern list adapted from [impeccable.style](https://impeccable.style/anti-patterns).
@@ -72,7 +72,7 @@ E14 to E30 are written as recipes in [`references/katalog-explainer.md`](referen
 
 1. **Read the material.** Main message, five to eight concepts worth animating, numbers that can be computed, a case to follow.
 2. **Basic questions.** Presentation type, duration, audience, theme, palette, quiz or no quiz.
-3. **Pick explainers** per concept, from the gallery and the agent's recommendations.
+3. **Brainstorm choreography & pick explainers** per concept—combining 2–3 motion primitives across Input → Transmission/Device → Output with simultaneous motion chains, from the gallery and the agent's creative pitches.
 4. **Choose a through-line.** One running story, or separate examples.
 5. **Plan** the run of show, numbered slide list and storyboard. Wait for approval.
 6. **Prototype** the cover and one key scene. Wait for approval.

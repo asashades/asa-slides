@@ -75,24 +75,55 @@ Kode ini belum punya demo di galeri; bangun langsung dari resep berikut. Semua a
 - **E29 Domino.** Deretan keping berlabel sebab-akibat. Tiap tahap merobohkan satu keping (`transform:rotate` dengan `transform-origin` di sudut bawah) dan menampilkan dampaknya. Tahap akhir: keping pertama diberi label akar.
 - **E30 Zoom.** Satu SVG besar berisi beberapa tingkat detail; tiap tahap mengubah `viewBox` (tween di `step()` dengan `requestAnimationFrame`) atau `transform:scale` grup ke area yang dibahas. Tingkat yang tidak aktif diredupkan.
 
+## Koreografi Imersif, Metafora Objek Fisik & Brainstorming Kreatif
+
+Kode `E1–E30` adalah **kosakata gerak dasar**, bukan satu-satunya adegan yang kaku. Untuk membuat explainer yang imersif dan berkelas (*high-craft*), agen harus merancang **koreografi cerita visual** yang menggabungkan beberapa teknik gerak sekaligus.
+
+### 1. Prinsip "Benda Nyata & Metafora Fisik, Bukan Kotak + Teks"
+Jangan pernah menggambar konsep abstrak hanya dengan kotak berlabel dan panah datar. Ubah input, proses, dan output menjadi **benda fisik yang bentuk dan mekanismenya langsung menceritakan konsep** meski seluruh teks dihapus:
+
+- **Contoh A (Klasifikasi Pembatasan Dana / 4 Transaksi -> 2 Wadah Kontras):**
+  Empat jenis transaksi ditampilkan sebagai 4 ilustrasi objek nyata yang bergerak satu per satu (`--i` stagger + `data-move`) menuju 2 wadah yang bentuk fisiknya berbeda kontras: **Kotak A (Tanpa Pembatasan)** digambar sebagai **1 peti kayu besar terbuka lebar** (dana bebas dipakai), sedangkan **Kotak B (Dengan Pembatasan)** digambar sebagai **3 kotak kecil terkunci gembok / bersekat** (tiap dana terikat peruntukannya).
+- **Contoh B (Digitalisasi e-Arsip -> 3 Laporan Standar ISAK):**
+  Rantai koreografi 3 babak lintas zona: **(1)** HP memotret struk fisik dengan kilatan blitz kamera (`.only` + `scale`) -> **(2)** Struk terlipat menjadi **pesawat kertas** yang terbang mengikuti kurva lintasan (`.draw` + translasi `[data-s]`) -> **(3)** Pesawat masuk ke celah **mesin printer** yang langsung mencetak keluar **3 lembar Laporan Standar ISAK** satu per satu (`--i` stagger + *paint order* DOM).
+- **Contoh C (Aliran Biaya Produksi / Harga Pokok Pesanan):**
+  Peti biaya berjalan di atas sabuk konveyor masuk ke mulut mesin cetak beroda gigi berputar (`rotate`), memompa dua pita Sankey (`.draw`) ke rak Produk Jadi (HPP) dan meja WIP, sementara balok biaya jatuh menumpuk proporsional (`.blk`) berdampingan dengan Kartu Harga Pokok (`count()`).
+
+### 2. Arsitektur Panggung Lebar Multi-Zona (`viewBox="0 0 1040 336"`)
+Hindari kanvas sempit (`360×210`) yang hanya berisi satu objek di tengah. Gunakan panggung lebar (`viewBox="0 0 1040 336"`) yang dibagi menjadi 3 zona cerita:
+- **Zona 1 (Pemicu / Input Fisik + Karakter Opsional):** Posisi awal objek nyata (dokumen, struk, HP, transaksi, peti bahan) dan karakter pemandu yang berganti pose tiap tahap (`data-now` + `.only`).
+- **Zona 2 (Transmisi / Alat Proses / Skala Proporsional):** Wadah atau mesin transformasi (pesawat kertas terbang, sabuk konveyor, mesin beroda gigi, timbangan miring, menara balok proporsional).
+- **Zona 3 (Wadah Muara / Output & Ringkasan Angka):** Wadah kontras (peti besar vs 3 kotak kecil terkunci, mesin printer yang mengeluarkan 3 lembar laporan, rak hasil + kartu angka `count()`).
+
+### 3. Rantai Gerak Simultan per Tekanan Panah (`→`)
+Setiap tahap panah (`→`) sebaiknya memicu **minimal 3 reaksi visual sekaligus**, bukan hanya satu elemen fade-in:
+$$\text{Benda bergerak/berubah wujud } (\texttt{data-move} / \texttt{[data-s]}) \rightarrow \text{Alat/wadah bereaksi } (\text{gigi berputar, blitz menyala, tutup terbuka}) \rightarrow \text{Output/grafik/angka tumbuh beruntun } (\texttt{--i}, \texttt{.draw}, \texttt{.grow-y}, \texttt{count()})$$
+
+### 4. Panduan Brainstorming Kreatif untuk Agen (4 Pertanyaan Pemicu Imajinasi)
+Di Fase 3, sebelum memilih kode `E1–E30`, ajukan 4 pertanyaan ini pada tiap konsep kunci lalu usulkan minimal **2 opsi koreografi** ke user:
+1. **Wujud fisik input:** Jika konsep ini benda nyata di meja kerja, apa wujudnya? (mis. 4 transaksi berbeda, struk belanja, bahan baku, kartu jam kerja).
+2. **Kontras bentuk wadah:** Bagaimana bentuk wadahnya bisa memvisualkan aturan konsep? (mis. 1 peti besar terbuka vs 3 kotak kecil terkunci; timbangan berat sebelah vs seimbang; tangki bocor vs tangki penuh).
+3. **Kendaraan/transmisi antar-zona:** Apa yang mengantarkan perubahan dari kiri ke kanan? (mis. blitz HP $\rightarrow$ pesawat kertas terbang $\rightarrow$ printer; sabuk konveyor $\rightarrow$ mesin; derek; pita Sankey).
+4. **Reaksi mekanis di muara akhir:** Saat objek tiba, apa reaksi alat atau angkanya? (printer mencetak 3 lembar laporan satu per satu, roda gigi memutar jarum, gembok menutup, angka `count()` berdetak naik).
+
 ## Syarat minimum per deck
 
 - Tiap bagian punya minimal satu adegan explainer; keseluruhan deck minimal satu adegan per 4–5 slide. Konsep yang diminta user wajib dianimasikan.
-- Tiap adegan minimal 3 tahap dan minimal 2 jenis gerak.
-- Satu tahap = satu gagasan = satu perubahan visual jelas + satu kalimat keterangan. Tahap terakhir memperlihatkan gambar lengkap (dipakai PDF).
+- Tiap adegan minimal 3 tahap, minimal 2–3 jenis gerak simultan per tahap, dan memadukan benda fisik/metafora dengan mekanisme kuantitatif atau alur.
+- Satu tahap = satu gagasan = satu rantai perubahan visual jelas + satu kalimat keterangan. Tahap terakhir memperlihatkan gambar lengkap (dipakai PDF).
 - Uji mandiri: hapus semua teks keterangan, gambarnya masih harus bercerita.
 - Jika dua slide menjelaskan gagasan yang sama, gabungkan jadi satu adegan bertahap.
 
 ## Template storyboard (dipakai di plan)
 
-| Tahap | Yang bergerak/berubah | Keterangan (satu kalimat) |
+Sertakan per adegan: **Metafora objek fisik (Input -> Transmisi/Alat -> Output)**, kombinasi kode explainer, 2D/3D, intensitas (halus/sedang/ramai), karakter pemandu (ya/tidak), dan untuk 3D alasan kenapa ruang membantu.
+
+| Tahap | Rantai gerak simultan (objek, alat, grafik, angka) | Keterangan (satu kalimat) |
 |---|---|---|
-| 0 | Keadaan awal: objek utama tampil | … |
+| 0 | Keadaan awal: panggung, objek input fisik, dan wadah tampil | … |
 | 1 | … | … |
 | … | … | … |
-| akhir | Gambar lengkap | Kesimpulan adegan |
-
-Sertakan juga: kode explainer, 2D/3D, intensitas (halus/sedang/ramai), dan untuk 3D alasan kenapa ruang membantu.
+| akhir | Gambar lengkap & seluruh angka akhir | Kesimpulan adegan |
 
 ## Teknik gerak (lihat juga mesin-slide.md)
 

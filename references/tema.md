@@ -22,6 +22,7 @@ Nilai untuk tema terang; versi gelap mengikuti pola template (latar gelap kebiru
 |---|---|---|---|---|---|---|
 | Cool (biru/teal) | #F3F6F8 | #FFFFFF | #13202A | #0B6E8A | #DCEEF3 | #0F161C / #5BBBD3 |
 | Warm (terakota) | #F7F3EF | #FFFFFF | #2A1D16 | #A4472A | #F5E1D8 | #1A1310 / #E0896B |
+| Earth tone (perkamen & kayu) | #F4EFE6 | #FFFDF9 | #261A12 | #8F3F1E | #F5E2D6 | #18130F / #E6946B |
 | Orange | #F7F4F0 | #FFFFFF | #1F1A14 | #C2560C | #FBE5D4 | #17120D / #F0995A |
 | Hijau | #F2F6F3 | #FFFFFF | #142019 | #1F7A4D | #DCEFE3 | #0F1712 / #6CC79A |
 | Monokrom | #F5F5F4 | #FFFFFF | #1A1A19 | #2E2E2C | #E7E7E5 | #121212 / #D8D8D5 |
@@ -30,5 +31,6 @@ Nilai untuk tema terang; versi gelap mengikuti pola template (latar gelap kebiru
 Aturan warna:
 - Jangan pakai ungu (hue 250–320) sebagai aksen utama atau gradien.
 - `--muted` harus tetap ≥ 4,5:1 terhadap `--bg` dan `--surface`.
-- Warna semantik di palet warm/orange: pastikan `--bad` tetap terbedakan dari `--accent` (geser `--accent` ke cokelat/oranye tua, `--bad` merah).
+- Warna semantik di palet warm/orange/earth tone: pastikan `--bad` tetap terbedakan dari `--accent` (geser `--accent` ke cokelat/terakota/oranye tua, `--bad` merah bata tegas).
+- Pada Pixel Art: gunakan `border: 2px solid var(--ink); border-radius: 0; box-shadow: 4px 4px 0 var(--ink);` (dengan `<html data-slop-allow="hard-shadow">`) agar bayangan keras tampil tajam tanpa memicu `[thick-colored-border]` dari `audit-slop.js`.
 - Latar rata. Tidak ada halo radial atau gradien latar.

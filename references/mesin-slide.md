@@ -53,6 +53,28 @@ Pola tiap kode explainer (E1–E13) ada di `assets/galeri-explainer.html`; salin
 
 Easing pakai `var(--ease)`. Jangan pakai easing bounce/elastic.
 
+## Teknik Koreografi Imersif & Multi-Gerak
+
+Untuk membuat adegan panggung lebar (`viewBox="0 0 1040 336"`) yang kaya tanpa menabrak aturan `anti-slop.md`:
+
+1. **Koreografi Multi-Titik lewat `dataset.s` (`#sc[data-s="n"]`):**
+   Setel `const e = c.q('#sc'); if (e) e.dataset.s = s;` di fungsi `step(s, c)` slide tersebut. Dengan selektor `#sc[data-s="1"] .obj`, satu objek dapat meluncur ke beberapa posisi berbeda di tahap 1, 2, dan 3 (mis. struk di HP -> berubah/terbang sebagai pesawat kertas di tengah -> mendarat masuk ke celah printer) atau memutar roda gigi bertahap (`rotate(120deg)` -> `rotate(240deg)` -> `rotate(360deg)`).
+2. **Gerak Beruntun / Cascade (`style="--i:0"`, `--i:1`, `--i:2`):**
+   Tulis di `[B]`:
+   ```css
+   #sc .itm { opacity: 0; transform: translateY(-18px); transition: opacity .35s var(--ease), transform .5s var(--ease); transition-delay: calc(var(--i) * 90ms); }
+   #sc .on .itm { opacity: 1; transform: none; }
+   ```
+   Pakai ini agar 4 jenis transaksi meluncur satu per satu ke wadahnya, balok biaya jatuh bertumpuk, atau 3 lembar laporan tercetak keluar dari printer secara berurutan hanya dengan satu kali menekan panah `→`.
+3. **Masking Urutan DOM (*Paint Order*):**
+   Di SVG, elemen yang digambar lebih awal berada di belakang elemen berikutnya. Gambarlah objek bergerak (peti di konveyor, pesawat kertas masuk slot, lembar laporan yang keluar) **sebelum** bodi depan mesin/printer/wadah sehingga objek tampak benar-benar masuk ke dalam mesin atau keluar dari celah printer.
+4. **Fungsi Pembangun Prop & Karakter Reusable di `[C]`:**
+   Tulis fungsi JS pembuat objek SVG di `[C]` (mis. `phone()`, `plane()`, `printer()`, `chest()`, `lockbox()`, `gearSvg()`, `crate()`, atau karakter pemandu `asa(x, yb, scale, pose, extra)`) dengan `rect { shape-rendering: crispEdges }` untuk tema Pixel Art atau path rapi untuk tema lain. Pakai `.only` + `data-now="0"`, `"1 2"`, `"3"` agar ekspresi/pose karakter berganti mengikuti alur cerita.
+5. **Tata Letak Aman di Layar HP (390px) & Proyektor 720p:**
+   - Tambahkan `#app { grid-template-columns: minmax(0, 1fr); }` di `[B]` agar `DECK.course` yang panjang tidak melebarkan grid pada viewport `390px`.
+   - Atur `@media (max-height: 820px) { .scene svg { max-height: 41vh; } }` bila caption 2 baris agar `uji-deck.js` tetap 0 overflow di `1280×720`.
+   - Jika membuat SVG ilustrasi mini di cover, sertakan elemen `<text>` atau `<path>` bermakna agar tidak terdeteksi `[placeholder-illustration]` oleh `audit-slop.js`.
+
 ## Helper
 
 | Helper | Fungsi |
